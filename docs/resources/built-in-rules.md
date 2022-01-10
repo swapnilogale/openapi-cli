@@ -331,38 +331,34 @@ However, if you have an idea for a built-in rule you believe will benefit the gr
 
 ## Generic built-in rules
 
-You can use special `enforcements` rule for cases which our other built-in rules do not cover.
-There are [a set of generic built-in rules](#list-of-generic-built-in-rules) which can be configured under `enforcements` to enforce different generic usecases.
+You can use special `assertions` for cases which our other built-in rules do not cover.
+There are [a set of generic built-in rules](#list-of-generic-built-in-rules) which can be configured under `assertions` to enforce different generic usecases.
 
 ### How it works?
 
-Let's say you want to validate Operation summary and Info description fields - they should be defined, not empty, 
-minimum 30 chars length and both have "_hello_" substring inside.
-For these usecases you can create next enforcements:
+Let's say you want to validate Operation summary and Info description fields - they should be defined,
+30 chars length and both should end with a "_full stop_".
+For this usecase you can create next assertion:
 
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on
+    assertions:
+      - on:
         - Operation.summary
         - Info.description
-        description: Summary and Description fields don't match enforcements
+        description: Operation summary and description fields should be at least 30 characters and end with a full stop.
         severity: error
         defined: true
-        nonEmpty: true
         minLength: 30
-        regex: /hello/
+        regex: /(full stop)$/
 ```
 
-In other words, it generates 8 unique custom rules `operation-summary-defined`, `operation-summary-non-empty`, `operation-summary-min-length`, `operation-summary-regex`,
-`info-description-defined`, `info-description-non-empty`, `info-description-min-length`, `info-description-regex`.
+### Format of `assertions`
 
-### Format of `enforcements` rule
-
-Basically `enforcements` rule is an array of enforcements, where each one has the next fields structure:
+Basically `assertions` is an array of assertions, where each one has the next fields structure:
 - `on` - the path or array of the paths to the properties on which we should do the linting. The path is the string splitted by `.`.
-- `description` - the message which shows in case of fail. Not required.
+- `description` - optional error message.
 - `severity` - the severity level of particular case (`off`, `warn`, `error`). Not required, by default `error`.
 - the [list of generic rules](#list-of-generic-built-in-rules) with their options.
 
@@ -376,13 +372,26 @@ To enforce a value to be among set of predefined values.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Summary should be amoung predefined values
         severity: error
         enum:
           - one
           - two
+```
+
+This rule also runs on node's keys. It means that the `on` path can end with the `$keys` string.
+
+```yaml
+lint:
+  rules:
+    assertions:
+      - on: MediaTypeMap.$keys
+        description: Only application/json can be used
+        severity: error
+        enum:
+          - application/json
 ```
 
 ### pattern
@@ -392,8 +401,8 @@ To enforce a value to match a regex.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Summary should match a regex
         severity: error
         pattern: /test/
@@ -401,13 +410,13 @@ lint:
 
 ### casing
 
-To enforce specific casing style (camelCase, kebab-case, snake_case, PascalCase)
+To enforce specific casing style (camelCase, kebab-case, snake_case, PascalCase, MACRO_CASE, COBOL-CASE, flatcase)
 
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.operationId
+    assertions:
+      - on: Operation.operationId
         description: Operation Id should be camelCase
         severity: error
         casing: camelCase
@@ -416,14 +425,13 @@ lint:
 ### mutuallyExclusive 
 
 To mark some properties as mutually exclusive (`a` or `b` but not `a` and `b` together).
-This rule runs only on node. It means that the `on` path should end with the node, but not the property.
-In case if the last part of the path is the property, the rule will be ignored.
+This rule runs only on node's keys. It means that the `on` path should end with the `$keys` string.
 
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation
+    assertions:
+      - on: Operation.$keys
         description: Operation should not have summary and security fileds together
         severity: error
         mutuallyExclusive:
@@ -434,14 +442,13 @@ lint:
 ### mutuallyRequired
 
 To mark some properties as mutually required (`a` and `b` but not only `a` or only `b`).
-This rule runs only on node. It means that the `on` path should end with the node, but not the property.
-In case if the last part of the path is the property, the rule will be ignored.
+This rule runs only on node's keys. It means that the `on` path should end with the `$keys` string.
 
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation
+    assertions:
+      - on: Operation.$keys
         description: Operation should have summary and security fileds together
         severity: error
         mutuallyRequired:
@@ -456,8 +463,8 @@ To check if some property is defined.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.operationId
+    assertions:
+      - on: Operation.operationId
         description: Operation Id should be defined
         severity: error
         defined: true
@@ -470,8 +477,8 @@ To check if some property is undefined.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Operation summary should be undefined
         severity: error
         undefined: true
@@ -484,8 +491,8 @@ To check if some property is not empty.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Operation summary should not be empty
         severity: error
         nonEmpty: true
@@ -498,8 +505,8 @@ To enforce length of specific array or string.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Operation summary should have 20 chars length
         severity: error
         length: 20
@@ -512,8 +519,8 @@ To enforce minimal length of specific array or string.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Operation summary should have minimum 20 chars length
         severity: error
         minLength: 20
@@ -526,8 +533,8 @@ To enforce maximal length of specific array or string.
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.summary
+    assertions:
+      - on: Operation.summary
         description: Operation summary should have maximum 20 chars length
         severity: error
         maxLength: 20
@@ -542,8 +549,8 @@ Also, in case of array of strings the direction could be also set like `sortOrde
 ```yaml
 lint:
   rules:
-    enforcements:
-      - on Operation.tags
+    assertions:
+      - on: Operation.tags
         description: Tags should be ordered in ASC direction
         severity: error
         sortOrder:
