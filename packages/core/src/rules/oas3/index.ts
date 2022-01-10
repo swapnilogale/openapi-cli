@@ -3,7 +3,7 @@ import { Oas3Decorator } from '../../visitors';
 import { OasSpec } from '../common/spec';
 import { Operation2xxResponse } from '../common/operation-2xx-response';
 import { Operation4xxResponse } from '../common/operation-4xx-response';
-import { Enforcements } from '../common/enforcements';
+import { Assertions } from '../common/assertions';
 import { OperationIdUnique } from '../common/operation-operationId-unique';
 import { OperationParametersUnique } from '../common/operation-parameters-unique';
 import { PathParamsDefined } from '../common/path-params-defined';
@@ -59,7 +59,7 @@ export const rules = {
   'info-license-url': InfoLicenseUrl,
   'operation-2xx-response': Operation2xxResponse,
   'operation-4xx-response': Operation4xxResponse,
-  'enforcements': Enforcements,
+  'assertions': Assertions,
   'operation-operationId-unique': OperationIdUnique,
   'operation-parameters-unique': OperationParametersUnique,
   'path-parameters-defined': PathParamsDefined,
