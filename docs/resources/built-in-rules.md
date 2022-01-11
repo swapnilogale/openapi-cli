@@ -8,21 +8,22 @@ redirectFrom:
 
 All of our built-in rules are listed below.
 We don't ship any built-in preprocessors.
-To change your settings for any given rule, just add or modify a corresponding item in the `rules` section of the `.redocly.yaml` in your working directory.
+To change your settings for any given rule, add or modify a corresponding item in the `rules` section of the `.redocly.yaml` in your working directory.
 
 Each of the `rules` entries can be one of following:
-- `rule-name`: `{severity}`, where `{severity}` is on of `error`, `warn` or `off`
-- ```yaml
+- `rule-name`: `{severity}`, where `{severity}` is one of `error`, `warn` or `off`
+- A map with severity, and rule-specific configuration
+  ```yaml
   rule-name:
     severity: {severity}
     rule-option-one: value
     rule-option-two: value
   ```
 
-## List of built in rules
+## List of built-in lint rules
 
 ### spec
-Validate against the declared OpenAPI specification (currently supports version 2.0, 3.0, and 3.1).
+Validate against the declared OpenAPI specification (supports version 2.0, 3.0, and 3.1).
 
 ### boolean-parameter-prefixes
 `name` fields of Parameters with type `boolean` should have a `is` or `has` prefix.
@@ -265,6 +266,12 @@ lint:
     disallowAdditionalProperties: false
 ```
 
+### assertions
+
+Configure assertions to enforce your API design standards without coding custom rules.
+Learn how to [configure assertions](./rules/assertions.md).
+
+
 ## Recommended config
 
 There are three built-in configurations:
@@ -328,232 +335,3 @@ Here is the equivalent of the `recommended` configuration values:
 
 OpenAPI-cli supports [custom rules](./custom-rules.md).
 However, if you have an idea for a built-in rule you believe will benefit the greater API community, please [open an issue](https://github.com/Redocly/openapi-cli/issues/new).
-
-## Generic built-in rules
-
-You can use special `assertions` for cases which our other built-in rules do not cover.
-There are [a set of generic built-in rules](#list-of-generic-built-in-rules) which can be configured under `assertions` to enforce different generic usecases.
-
-### How it works?
-
-Let's say you want to validate Operation summary and Info description fields - they should be defined,
-30 chars length and both should end with a "_full stop_".
-For this usecase you can create next assertion:
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on:
-        - Operation.summary
-        - Info.description
-        description: Operation summary and description fields should be at least 30 characters and end with a full stop.
-        severity: error
-        defined: true
-        minLength: 30
-        regex: /(full stop)$/
-```
-
-### Format of `assertions`
-
-Basically `assertions` is an array of assertions, where each one has the next fields structure:
-- `on` - the path or array of the paths to the properties on which we should do the linting. The path is the string splitted by `.`.
-- `description` - optional error message.
-- `severity` - the severity level of particular case (`off`, `warn`, `error`). Not required, by default `error`.
-- the [list of generic rules](#list-of-generic-built-in-rules) with their options.
-
-
-## List of generic built-in rules
-
-### enum
-
-To enforce a value to be among set of predefined values.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Summary should be amoung predefined values
-        severity: error
-        enum:
-          - one
-          - two
-```
-
-This rule also runs on node's keys. It means that the `on` path can end with the `$keys` string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: MediaTypeMap.$keys
-        description: Only application/json can be used
-        severity: error
-        enum:
-          - application/json
-```
-
-### pattern
-
-To enforce a value to match a regex.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Summary should match a regex
-        severity: error
-        pattern: /test/
-```
-
-### casing
-
-To enforce specific casing style (camelCase, kebab-case, snake_case, PascalCase, MACRO_CASE, COBOL-CASE, flatcase)
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.operationId
-        description: Operation Id should be camelCase
-        severity: error
-        casing: camelCase
-```
-
-### mutuallyExclusive 
-
-To mark some properties as mutually exclusive (`a` or `b` but not `a` and `b` together).
-This rule runs only on node's keys. It means that the `on` path should end with the `$keys` string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.$keys
-        description: Operation should not have summary and security fileds together
-        severity: error
-        mutuallyExclusive:
-          - summary
-          - security
-```
-
-### mutuallyRequired
-
-To mark some properties as mutually required (`a` and `b` but not only `a` or only `b`).
-This rule runs only on node's keys. It means that the `on` path should end with the `$keys` string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.$keys
-        description: Operation should have summary and security fileds together
-        severity: error
-        mutuallyRequired:
-          - summary
-          - security
-```
-
-### defined
-
-To check if some property is defined. 
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.operationId
-        description: Operation Id should be defined
-        severity: error
-        defined: true
-```
-
-### undefined
-
-To check if some property is undefined.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Operation summary should be undefined
-        severity: error
-        undefined: true
-```
-
-### nonEmpty
-
-To check if some property is not empty.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Operation summary should not be empty
-        severity: error
-        nonEmpty: true
-```
-
-### length
-
-To enforce length of specific array or string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Operation summary should have 20 chars length
-        severity: error
-        length: 20
-```
-
-### minLength
-
-To enforce minimal length of specific array or string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Operation summary should have minimum 20 chars length
-        severity: error
-        minLength: 20
-```
-
-### maxLength
-
-To enforce maximal length of specific array or string.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.summary
-        description: Operation summary should have maximum 20 chars length
-        severity: error
-        maxLength: 20
-```
-
-### sortOrder
-
-To enforce sort order in array of strings or array of objects (collection). 
-If the `property` fields is present, it means that we check the sort order direction on collection. 
-Also, in case of array of strings the direction could be also set like `sortOrder: asc`.
-
-```yaml
-lint:
-  rules:
-    assertions:
-      - on: Operation.tags
-        description: Tags should be ordered in ASC direction
-        severity: error
-        sortOrder:
-          direction: asc
-          property: name
-```
