@@ -43,7 +43,7 @@ export const yamlSerializer = {
   },
 };
 
-export function makeConfigForRuleset(rules: Oas3RuleSet, plugin?: Partial<Plugin>) {
+export function makeConfigForRuleset(rules: Oas3RuleSet, plugin?: Partial<Plugin>, version: string = 'oas3') {
   const rulesConf: Record<string, RuleConfig> = {};
   const ruleId = 'test';
   Object.keys(rules).forEach((name) => {
@@ -55,7 +55,7 @@ export function makeConfigForRuleset(rules: Oas3RuleSet, plugin?: Partial<Plugin
       {
         ...plugin,
         id: ruleId,
-        rules: { oas3: rules },
+        rules: { [version]: rules },
       },
     ],
     extends: [],
