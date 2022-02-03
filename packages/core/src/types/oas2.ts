@@ -62,6 +62,7 @@ const PathMap: NodeType = {
 const PathItem: NodeType = {
   properties: {
     $ref: { type: 'string' }, // TODO: verify special $ref handling for Path Item
+    parameters: listOf('Parameter'),
 
     get: 'Operation',
     put: 'Operation',
@@ -71,7 +72,6 @@ const PathItem: NodeType = {
     head: 'Operation',
     patch: 'Operation',
 
-    parameters: listOf('Parameter'),
   },
 };
 
